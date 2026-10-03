@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-tts-api"
+version = "0.1.0"
+description = "Local HTTP API for Open TTS"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "open-tts-engine",
+    "uvicorn[standard]",
+]
+
+[project.scripts]
+open-tts-api = "open_tts_api.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+open-tts-engine = { path = "../engine", editable = true }

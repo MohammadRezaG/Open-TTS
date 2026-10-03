@@ -1,0 +1,16 @@
+
+services:
+  tts:
+    build: .
+    ports:
+      - "127.0.0.1:7862:7862"
+    environment:
+      HF_HOME: /models/huggingface
+      GRADIO_SERVER_NAME: 0.0.0.0
+    volumes:
+      - ./ref-project/webui-v2:/app/webui-v2
+      - model_cache:/models/huggingface
+    restart: unless-stopped
+
+volumes:
+  model_cache:

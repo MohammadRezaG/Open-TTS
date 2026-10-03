@@ -1,0 +1,46 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Open TTS API",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "open_tts_api.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--log-level",
+        "debug"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "HF_HOME": "${env:TEMP}/open-tts-hf-cache",
+        "HF_HUB_DISABLE_XET": "1"
+      }
+    },
+    {
+      "name": "Open TTS Web UI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "open_tts_webui",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "OPEN_TTS_API_URL": "http://127.0.0.1:8000"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Open TTS (local)",
+      "configurations": ["Open TTS API", "Open TTS Web UI"],
+      "stopAll": true
+    }
+  ]
+}

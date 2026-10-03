@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/engine/src",
+    "${workspaceFolder}/api/src",
+    "${workspaceFolder}/webui/src"
+  ]
+}
