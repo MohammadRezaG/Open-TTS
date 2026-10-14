@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi",
     "open-tts-engine",
+    "open-tts-common",
     "uvicorn[standard]",
 ]
 
@@ -21,3 +22,4 @@ where = ["src"]
 
 [tool.uv.sources]
 open-tts-engine = { path = "../engine", editable = true }
+open-tts-common = { path = "../common", editable = true }
