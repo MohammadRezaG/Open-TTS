@@ -9,6 +9,7 @@ description = "Local HTTP API for Open TTS"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
+    "huggingface_hub",
     "open-tts-engine",
     "open-tts-common",
     "uvicorn[standard]",

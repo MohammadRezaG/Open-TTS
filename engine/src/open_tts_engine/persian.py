@@ -4,6 +4,7 @@ import re
 import unicodedata
 
 import torch
+from hazm import Normalizer
 from transformers import AutoTokenizer, PreTrainedTokenizerBase, T5ForConditionalGeneration
 
 _LETTERS = "آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیئ"
@@ -37,7 +38,6 @@ _PUNCTUATION_MAP = str.maketrans(
 _DIACRITICS = re.compile(r"[ً-ٰٕۖ-ۭٖ-ٟ]")
 _INVISIBLES = re.compile(r"[\u200b\u200d-\u200f\u202a-\u202e\u2066-\u2069\ufeff\u00ad]")
 _NUMBER_RE = re.compile(r"(-?\d+)(?:\.(\d+))?")
-_TO_PHONEMES = str.maketrans({"/": "a", "a": "A", "@": "?", "$": "S", "c": "C"})
 
 _ONES = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"]
 _TEENS = [
@@ -53,6 +53,16 @@ _SCALES = (
 _FRACTION_UNITS = {1: "دهم", 2: "صدم", 3: "هزارم"}
 # ponytail: read longer digit strings individually; extend scales if natural readings above 12 digits are needed.
 _MAX_NUMBER_DIGITS = 12
+_HAZM_NORMALIZER = Normalizer(
+    correct_spacing=True,
+    remove_diacritics=False,
+    remove_specials_chars=False,
+    decrease_repeated_chars=False,
+    persian_style=True,
+    persian_numbers=False,
+    unicodes_replacement=True,
+    seperate_mi=False,
+)
 
 
 def _under_thousand(number: int) -> str:
@@ -118,12 +128,14 @@ def numbers_to_words(text: str) -> str:
 
 
 def normalize_persian(text: str) -> str:
+    """Normalize Persian characters and number words before G2P/model input."""
     text = unicodedata.normalize("NFC", text)
     text = _INVISIBLES.sub("", text)
     text = _DIACRITICS.sub("", text).translate(_LETTER_MAP).translate(_DIGIT_MAP)
     text = text.replace("٬", "").replace("٫", ".")
     text = re.sub(r"[٪%]", " درصد ", text)
     text = numbers_to_words(text)
+    text = _HAZM_NORMALIZER.normalize(text)
     text = text.translate(_PUNCTUATION_MAP)
     allowed = set(_LETTERS + _ZWNJ + _KEPT_PUNCTUATION + " ")
     text = "".join(char if char in allowed else " " for char in text)
@@ -157,13 +169,13 @@ class PersianPhonemizer:
         model = T5ForConditionalGeneration.from_pretrained(model_id).eval()
         return cls(tokenizer, model)
 
-    def convert(self, text: str) -> str:
-        normalized = normalize_persian(text)
-        if not normalized:
+    def phonemize(self, normalized_text: str) -> str:
+        """Convert already-normalized Persian text into raw G2P output."""
+        if not normalized_text:
             raise ValueError("Enter Persian text to synthesize.")
 
         inputs = self._tokenizer(
-            [normalized], add_special_tokens=False, return_tensors="pt"
+            [normalized_text], add_special_tokens=False, return_tensors="pt"
         )
         with torch.inference_mode():
             output = self._model.generate(
@@ -172,5 +184,5 @@ class PersianPhonemizer:
                 max_length=512,
                 early_stopping=True,
             )
-        phonemes = self._tokenizer.batch_decode(output, skip_special_tokens=True)[0]
-        return phonemes.strip().replace("1", "").translate(_TO_PHONEMES)
+        raw_phonemes = self._tokenizer.batch_decode(output, skip_special_tokens=True)[0]
+        return raw_phonemes.strip()

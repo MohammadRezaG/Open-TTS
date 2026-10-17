@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+import ipaddress
 import os
 from pathlib import Path
 import tempfile
@@ -45,6 +46,21 @@ class AppConfig:
             raise ValueError("Log retention must be between 1 and 30 files.")
         if not 1 <= self.admin_session_minutes <= 1440:
             raise ValueError("Admin session timeout must be between 1 and 1440 minutes.")
+        supported_runtimes = {
+            "pocket_farsi_v2": "pytorch",
+            "kitten_mini_08": "onnxruntime",
+        }
+        if self.active_model not in supported_runtimes:
+            raise ValueError(f"Unsupported active model: {self.active_model}.")
+        if self.runtime != supported_runtimes[self.active_model]:
+            raise ValueError(f"Runtime {self.runtime} is not supported for {self.active_model}.")
+        if self.device not in {"auto", "cpu", "cuda"}:
+            raise ValueError("Device must be auto, cpu, or cuda.")
+        for network in self.allowed_networks:
+            try:
+                ipaddress.ip_network(network, strict=False)
+            except ValueError as exc:
+                raise ValueError(f"Invalid allowed network CIDR: {network}") from exc
 
 
 def load_config(path: Path | None = None) -> AppConfig:

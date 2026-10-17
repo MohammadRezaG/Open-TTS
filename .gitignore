@@ -6,6 +6,7 @@ __pycache__/
 build/
 dist/
 /ref-project/
+/ref-project-2/
 /.codex/
 /HANDOFF-2026-09-30.md
 .env

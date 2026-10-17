@@ -6,10 +6,17 @@ build-backend = "setuptools.build_meta"
 name = "open-tts-engine"
 version = "0.1.0"
 description = "Model and Persian text processing for Open TTS"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
+    "hazm>=0.12.1,<0.13",
     "pocket-tts>=3.3,<4",
     "transformers",
+]
+
+[project.optional-dependencies]
+kitten = [
+    "onnxruntime>=1.18",
+    "kittentts @ https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl",
 ]
 
 [tool.setuptools.packages.find]
